@@ -327,7 +327,7 @@ export const en = {
   "runtime.wizard.not_configured_starting":
     "Application is not configured yet. Starting wizard...\n",
   "runtime.wizard.tty_required":
-    "Interactive wizard requires a TTY terminal. Run `opencode-telegram config` in an interactive shell.",
+    "Interactive wizard requires a TTY terminal. Run `zardbot-telegram config` in an interactive shell.",
 
   "rename.no_session": "⚠️ No active session. Create or select a session first.",
   "rename.prompt": "📝 Enter new title for session:\n\nCurrent: {title}",
@@ -411,7 +411,7 @@ export const en = {
   "cmd.description.rename": "Rename current session",
 
   "cli.usage":
-    "Usage:\n  opencode-telegram [start] [--mode sources|installed]\n  opencode-telegram status\n  opencode-telegram stop\n  opencode-telegram config\n\nNotes:\n  - No command defaults to `start`\n  - `--mode` is currently supported for `start` only",
+    "Usage:\n  zardbot-telegram [start] [--mode sources|installed]\n  zardbot-telegram status\n  zardbot-telegram stop\n  zardbot-telegram config\n\nNotes:\n  - No command defaults to `start`\n  - `--mode` is currently supported for `start` only",
   "cli.placeholder.status":
     "Command `status` is currently a placeholder. Real status checks will be added in service layer (Phase 5).",
   "cli.placeholder.stop":

@@ -297,7 +297,7 @@ export const zh: I18nDictionary = {
   "runtime.wizard.saved": "配置已保存：\n- {envPath}\n- {settingsPath}\n",
   "runtime.wizard.not_configured_starting": "应用尚未配置。正在启动向导...\n",
   "runtime.wizard.tty_required":
-    "交互式向导需要 TTY 终端。请在交互式 shell 中运行 `opencode-telegram config`。",
+    "交互式向导需要 TTY 终端。请在交互式 shell 中运行 `zardbot-telegram config`。",
 
   "rename.no_session": "⚠️ 没有活动会话。请先创建或选择一个会话。",
   "rename.prompt": "📝 请输入会话的新标题：\n\n当前：{title}",
@@ -375,7 +375,7 @@ export const zh: I18nDictionary = {
   "cmd.description.rename": "重命名当前会话",
 
   "cli.usage":
-    "用法:\n  opencode-telegram [start] [--mode sources|installed]\n  opencode-telegram status\n  opencode-telegram stop\n  opencode-telegram config\n\n注意:\n  - 无命令时默认为 `start`\n  - `--mode` 当前仅支持 `start`",
+    "用法:\n  zardbot-telegram [start] [--mode sources|installed]\n  zardbot-telegram status\n  zardbot-telegram stop\n  zardbot-telegram config\n\n注意:\n  - 无命令时默认为 `start`\n  - `--mode` 当前仅支持 `start`",
   "cli.placeholder.status": "`status` 命令当前为占位符。实际状态检查将在服务层中添加（第5阶段）。",
   "cli.placeholder.stop":
     "`stop` 命令当前为占位符。实际后台进程停止功能将在服务层中添加（第5阶段）。",

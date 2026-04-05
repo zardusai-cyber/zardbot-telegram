@@ -328,7 +328,7 @@ export const ru: I18nDictionary = {
   "runtime.wizard.not_configured_starting":
     "Приложение еще не сконфигурировано. Запускаю wizard...\n",
   "runtime.wizard.tty_required":
-    "Интерактивный wizard требует TTY-терминал. Запустите `opencode-telegram config` в интерактивной оболочке.",
+    "Интерактивный wizard требует TTY-терминал. Запустите `zardbot-telegram config` в интерактивной оболочке.",
 
   "rename.no_session": "⚠️ Нет активной сессии. Сначала создайте или выберите сессию.",
   "rename.prompt": "📝 Введите новое название сессии:\n\nТекущее: {title}",
@@ -415,7 +415,7 @@ export const ru: I18nDictionary = {
   "cmd.description.rename": "Переименовать текущую сессию",
 
   "cli.usage":
-    "Использование:\n  opencode-telegram [start] [--mode sources|installed]\n  opencode-telegram status\n  opencode-telegram stop\n  opencode-telegram config\n\nЗаметки:\n  - Без команды по умолчанию используется `start`\n  - `--mode` сейчас поддерживается только для `start`",
+    "Использование:\n  zardbot-telegram [start] [--mode sources|installed]\n  zardbot-telegram status\n  zardbot-telegram stop\n  zardbot-telegram config\n\nЗаметки:\n  - Без команды по умолчанию используется `start`\n  - `--mode` сейчас поддерживается только для `start`",
   "cli.placeholder.status":
     "Команда `status` пока работает как заглушка. Реальная проверка статуса появится на этапе service-слоя (Этап 5).",
   "cli.placeholder.stop":

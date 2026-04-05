@@ -338,7 +338,7 @@ export const es: I18nDictionary = {
   "runtime.wizard.not_configured_starting":
     "La aplicación aún no está configurada. Iniciando el asistente...\n",
   "runtime.wizard.tty_required":
-    "El asistente interactivo requiere un terminal TTY. Ejecuta `opencode-telegram config` en una shell interactiva.",
+    "El asistente interactivo requiere un terminal TTY. Ejecuta `zardbot-telegram config` en una shell interactiva.",
 
   "rename.no_session": "⚠️ No hay una sesión activa. Crea o selecciona una sesión primero.",
   "rename.prompt": "📝 Introduce un nuevo título para la sesión:\n\nActual: {title}",
@@ -426,7 +426,7 @@ export const es: I18nDictionary = {
   "cmd.description.rename": "Renombrar la sesión actual",
 
   "cli.usage":
-    "Uso:\n  opencode-telegram [start] [--mode sources|installed]\n  opencode-telegram status\n  opencode-telegram stop\n  opencode-telegram config\n\nNotas:\n  - Sin comando, el valor por defecto es `start`\n  - `--mode` actualmente solo se admite para `start`",
+    "Uso:\n  zardbot-telegram [start] [--mode sources|installed]\n  zardbot-telegram status\n  zardbot-telegram stop\n  zardbot-telegram config\n\nNotas:\n  - Sin comando, el valor por defecto es `start`\n  - `--mode` actualmente solo se admite para `start`",
   "cli.placeholder.status":
     "El comando `status` es actualmente un marcador de posición. Las comprobaciones reales de estado se agregarán en la capa de servicio (Fase 5).",
   "cli.placeholder.stop":
