@@ -143,19 +143,15 @@ export async function handleVoiceCallback(ctx: Context): Promise<boolean> {
     if (callbackData.action === "select" && callbackData.voice) {
       setCurrentTtsVoice(callbackData.voice);
       setTtsEnabled(true);
-      await ctx.answerCallbackQuery({ text: t("tts.voice_changed", { voice: callbackData.voice }) });
-      
-      // Update the menu to show selection
-      const voices = await getAvailableVoices();
-      const currentVoice = getCurrentTtsVoice();
-      await ctx.editMessageText(
-        t("tts.menu_current", { voice: currentVoice || "default" }),
-        {
-          reply_markup: {
-            inline_keyboard: buildVoiceKeyboard(voices, 0, currentVoice),
-          },
-        },
-      );
+      const msg = ctx.callbackQuery?.message;
+      if (msg && "message_id" in msg) {
+        await ctx.api.editMessageText(
+          ctx.chat!.id,
+          msg.message_id,
+          t("tts.voice_changed", { voice: callbackData.voice }),
+          { reply_markup: undefined },
+        );
+      }
       return true;
     }
 
