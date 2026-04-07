@@ -209,6 +209,13 @@ export const es: I18nDictionary = {
   "model.menu.recent_empty": "— Vacío.",
   "model.menu.favorites_hint":
     "ℹ️ Agrega modelos a favoritos en OpenCode CLI para mantenerlos arriba de la lista.",
+  "model.menu.select_provider": "🌐 Selecciona un proveedor:",
+  "model.menu.select_model_for_provider": "Selecciona el modelo para {provider}:",
+  "model.menu.all_providers": "🌐 Todos los proveedores",
+  "model.menu.back_to_providers": "⬅️ Volver a proveedores",
+  "model.menu.back_to_main": "⬅️ Volver al menú principal",
+  "model.menu.provider_source_api": "📡 API",
+  "model.menu.provider_source_config": "📝 Config",
   "model.menu.error": "🔴 No se pudo obtener la lista de modelos",
 
   "variant.model_not_selected_callback": "Error: no hay un modelo seleccionado",

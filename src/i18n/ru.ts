@@ -201,6 +201,13 @@ export const ru: I18nDictionary = {
   "model.menu.recent_empty": "— Список пуст.",
   "model.menu.favorites_hint":
     "ℹ️ Добавляйте модели в избранное через OpenCode CLI, чтобы они были вверху списка.",
+  "model.menu.select_provider": "🌐 Выберите провайдера:",
+  "model.menu.select_model_for_provider": "Выберите модель для {provider}:",
+  "model.menu.all_providers": "🌐 Все провайдеры",
+  "model.menu.back_to_providers": "⬅️ Назад к провайдерам",
+  "model.menu.back_to_main": "⬅️ Назад в главное меню",
+  "model.menu.provider_source_api": "📡 API",
+  "model.menu.provider_source_config": "📝 Конфиг",
   "model.menu.error": "🔴 Не удалось получить список моделей",
 
   "variant.model_not_selected_callback": "Ошибка: модель не выбрана",

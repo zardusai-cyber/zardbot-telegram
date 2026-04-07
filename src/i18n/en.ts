@@ -199,6 +199,13 @@ export const en = {
   "model.menu.recent_empty": "— Empty.",
   "model.menu.favorites_hint":
     "ℹ️ Add models to favorites in OpenCode CLI to keep them at the top.",
+  "model.menu.select_provider": "🌐 Select a provider:",
+  "model.menu.select_model_for_provider": "Select model for {provider}:",
+  "model.menu.all_providers": "🌐 All Providers",
+  "model.menu.back_to_providers": "⬅️ Back to Providers",
+  "model.menu.back_to_main": "⬅️ Back to Main Menu",
+  "model.menu.provider_source_api": "📡 API",
+  "model.menu.provider_source_config": "📝 Config",
   "model.menu.error": "🔴 Failed to get models list",
 
   "variant.model_not_selected_callback": "Error: model is not selected",

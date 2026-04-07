@@ -4,6 +4,7 @@ import { opencodeClient } from "../opencode/client.js";
 import { logger } from "../utils/logger.js";
 import type { ModelInfo, FavoriteModel, ModelSelectionLists } from "./types.js";
 import path from "node:path";
+import os from "node:os";
 
 interface OpenCodeModelState {
   favorite?: Array<{ providerID?: string; modelID?: string }>;
@@ -16,8 +17,91 @@ let cachedValidModelKeys: Set<string> | null = null;
 let modelCatalogCacheExpiresAt = 0;
 let modelCatalogFetchInFlight: Promise<Set<string> | null> | null = null;
 
+// Cache for full provider/model data (API + JSONC config)
+let cachedProviderModelData: Array<{ providerID: string; models: string[]; source: "api" | "config" }> | null = null;
+let providerModelDataCacheExpiresAt = 0;
+let providerModelDataFetchInFlight: Promise<Array<{ providerID: string; models: string[]; source: "api" | "config" }> | null> | null = null;
+
 function getModelKey(providerID: string, modelID: string): string {
   return `${providerID}/${modelID}`;
+}
+
+function getOpenCodeConfigFilePaths(): string[] {
+  const paths: string[] = [];
+  
+  // Standard XDG config locations
+  const xdgConfigHome = process.env.XDG_CONFIG_HOME;
+  const homeDir = process.env.HOME || process.env.USERPROFILE || os.homedir();
+  
+  if (xdgConfigHome) {
+    paths.push(path.join(xdgConfigHome, "opencode", "opencode.jsonc"));
+  }
+  
+  if (homeDir) {
+    paths.push(path.join(homeDir, ".config", "opencode", "opencode.jsonc"));
+  }
+  
+  // Add common alternative locations
+  paths.push("/root/.config/opencode/opencode.jsonc");
+  
+  return paths;
+}
+
+async function readJsoncConfigFiles(): Promise<Array<{ providerID: string; models: string[] }> | null> {
+  try {
+    const fs = await import("fs/promises");
+    const configPaths = getOpenCodeConfigFilePaths();
+    const providers = new Map<string, Set<string>>();
+    
+    for (const configPath of configPaths) {
+      try {
+        const content = await fs.readFile(configPath, "utf-8");
+        
+        // Remove JSON comments (simple implementation for JSONC)
+        const cleanContent = content
+          .replace(/\/\/.*$/gm, "")  // Remove single-line comments
+          .replace(/\/\*[\s\S]*?\*\//g, ""); // Remove multi-line comments
+        
+        const configData = JSON.parse(cleanContent);
+        
+        if (configData?.provider && typeof configData.provider === "object") {
+          for (const [providerID, providerConfig] of Object.entries(configData.provider)) {
+            const typedProviderConfig = providerConfig as { models?: Record<string, unknown> };
+            if (typedProviderConfig?.models && typeof typedProviderConfig.models === "object") {
+              const models = Object.keys(typedProviderConfig.models);
+              
+              if (!providers.has(providerID)) {
+                providers.set(providerID, new Set());
+              }
+              
+              const providerModels = providers.get(providerID)!;
+              models.forEach(modelID => providerModels.add(modelID));
+            }
+          }
+        }
+      } catch (err) {
+        // Ignore individual file errors and continue with others
+        logger.debug(`[ModelManager] Ignoring config file ${configPath}:`, err);
+      }
+    }
+    
+    if (providers.size === 0) {
+      return null;
+    }
+    
+    const result: Array<{ providerID: string; models: string[] }> = [];
+    providers.forEach((models, providerID) => {
+      result.push({
+        providerID,
+        models: Array.from(models)
+      });
+    });
+    
+    return result;
+  } catch (err) {
+    logger.warn("[ModelManager] Error reading JSONC config files:", err);
+    return null;
+  }
 }
 
 function getEnvDefaultModel(): FavoriteModel | null {
@@ -53,6 +137,96 @@ function filterModelsByCatalog(
   }
 
   return models.filter((model) => validModelKeys.has(getModelKey(model.providerID, model.modelID)));
+}
+
+async function getAllProvidersAndModels(): Promise<Array<{ providerID: string; models: string[]; source: "api" | "config" }> | null> {
+  // Check cache first
+  if (cachedProviderModelData && Date.now() < providerModelDataCacheExpiresAt) {
+    logger.debug(
+      `[ModelManager] Provider/model data cache hit: providers=${cachedProviderModelData.length}, ttlMs=${providerModelDataCacheExpiresAt - Date.now()}`,
+    );
+    return cachedProviderModelData;
+  }
+  
+  // If there's already a fetch in flight, wait for it
+  if (providerModelDataFetchInFlight) {
+    logger.debug("[ModelManager] Awaiting in-flight provider/model data refresh");
+    return providerModelDataFetchInFlight;
+  }
+  
+  providerModelDataFetchInFlight = (async () => {
+    try {
+      logger.debug("[ModelManager] Refreshing provider/model data from all sources");
+      
+      // Fetch from API
+      const apiResponse = await opencodeClient.config.providers();
+      let apiProviders: Array<{ providerID: string; models: string[]; source: "api" }> = [];
+      
+      if (!apiResponse.error && apiResponse.data) {
+        apiProviders = apiResponse.data.providers.map(provider => ({
+          providerID: provider.id,
+          models: Object.keys(provider.models),
+          source: "api" as const
+        }));
+        
+        logger.debug(`[ModelManager] Loaded ${apiProviders.length} providers from API`);
+      } else {
+        logger.warn("[ModelManager] Failed to load providers from API:", apiResponse.error);
+      }
+      
+      // Fetch from JSONC config files
+      const configProviders = await readJsoncConfigFiles();
+      const configProvidersWithSource = configProviders?.map(config => ({
+        ...config,
+        source: "config" as const
+      })) || [];
+      
+      if (configProvidersWithSource.length > 0) {
+        logger.debug(`[ModelManager] Loaded ${configProvidersWithSource.length} providers from config files`);
+      }
+      
+      // Merge providers from both sources, API takes precedence for duplicates
+      const mergedProviders = new Map<string, { providerID: string; models: string[]; source: "api" | "config" }>();
+      
+      // Add API providers first (they take precedence)
+      apiProviders.forEach(provider => {
+        mergedProviders.set(provider.providerID, provider);
+      });
+      
+      // Add config providers (only if not already present from API)
+      configProvidersWithSource.forEach(provider => {
+        if (!mergedProviders.has(provider.providerID)) {
+          mergedProviders.set(provider.providerID, provider);
+        }
+      });
+      
+      const result = Array.from(mergedProviders.values());
+      
+      // Cache the result
+      cachedProviderModelData = result;
+      providerModelDataCacheExpiresAt = Date.now() + MODEL_CATALOG_CACHE_TTL_MS;
+      
+      logger.debug(
+        `[ModelManager] Provider/model data refreshed: totalProviders=${result.length}, apiProviders=${apiProviders.length}, configProviders=${configProvidersWithSource.length}`,
+      );
+      
+      return result;
+    } catch (err) {
+      logger.warn("[ModelManager] Error refreshing provider/model data:", err);
+      
+      // Return cached data if available
+      if (cachedProviderModelData) {
+        logger.warn("[ModelManager] Using stale provider/model data cache after refresh exception");
+        return cachedProviderModelData;
+      }
+      
+      return null;
+    } finally {
+      providerModelDataFetchInFlight = null;
+    }
+  })();
+  
+  return providerModelDataFetchInFlight;
 }
 
 async function getValidModelKeys(): Promise<Set<string> | null> {
@@ -291,6 +465,9 @@ export function __resetModelCatalogCacheForTests(): void {
   cachedValidModelKeys = null;
   modelCatalogCacheExpiresAt = 0;
   modelCatalogFetchInFlight = null;
+  cachedProviderModelData = null;
+  providerModelDataCacheExpiresAt = 0;
+  providerModelDataFetchInFlight = null;
 }
 
 /**
@@ -300,6 +477,46 @@ export function __resetModelCatalogCacheForTests(): void {
 export async function getFavoriteModels(): Promise<FavoriteModel[]> {
   const { favorites } = await getModelSelectionLists();
   return favorites;
+}
+
+/**
+ * Get all available providers and their models from both API and config files
+ * @returns Array of providers with their models, or null if unavailable
+ */
+export async function getAllProvidersWithModels(): Promise<Array<{ 
+  providerID: string; 
+  models: string[]; 
+  source: "api" | "config";
+}> | null> {
+  return getAllProvidersAndModels();
+}
+
+/**
+ * Get a simplified list of all providers (just provider IDs)
+ * @returns Array of provider IDs, or null if unavailable
+ */
+export async function getAllProviderIDs(): Promise<string[] | null> {
+  const providersData = await getAllProvidersAndModels();
+  if (!providersData) {
+    return null;
+  }
+  
+  return providersData.map(provider => provider.providerID);
+}
+
+/**
+ * Get all models for a specific provider
+ * @param providerID Provider ID to get models for
+ * @returns Array of model IDs, or null if provider not found or unavailable
+ */
+export async function getModelsForProvider(providerID: string): Promise<string[] | null> {
+  const providersData = await getAllProvidersAndModels();
+  if (!providersData) {
+    return null;
+  }
+  
+  const provider = providersData.find(p => p.providerID === providerID);
+  return provider?.models ?? null;
 }
 
 /**
