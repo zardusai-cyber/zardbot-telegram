@@ -29,20 +29,37 @@ function getModelKey(providerID: string, modelID: string): string {
 function getOpenCodeConfigFilePaths(): string[] {
   const paths: string[] = [];
   
-  // Standard XDG config locations
-  const xdgConfigHome = process.env.XDG_CONFIG_HOME;
   const homeDir = process.env.HOME || process.env.USERPROFILE || os.homedir();
   
-  if (xdgConfigHome) {
-    paths.push(path.join(xdgConfigHome, "opencode", "opencode.jsonc"));
+  if (process.platform === "win32") {
+    const appData = process.env.APPDATA;
+    const localAppData = process.env.LOCALAPPDATA;
+    
+    if (appData) {
+      paths.push(path.join(appData, "opencode", "opencode.jsonc"));
+    }
+    if (localAppData) {
+      paths.push(path.join(localAppData, "opencode", "opencode.jsonc"));
+    }
+    if (homeDir) {
+      paths.push(path.join(homeDir, ".opencode", "opencode.jsonc"));
+    }
+  } else {
+    // Standard XDG config locations
+    const xdgConfigHome = process.env.XDG_CONFIG_HOME;
+    
+    if (xdgConfigHome) {
+      paths.push(path.join(xdgConfigHome, "opencode", "opencode.jsonc"));
+    }
+    
+    if (homeDir) {
+      paths.push(path.join(homeDir, ".config", "opencode", "opencode.jsonc"));
+      paths.push(path.join(homeDir, ".opencode", "opencode.jsonc"));
+    }
+    
+    // Add common alternative locations
+    paths.push("/root/.config/opencode/opencode.jsonc");
   }
-  
-  if (homeDir) {
-    paths.push(path.join(homeDir, ".config", "opencode", "opencode.jsonc"));
-  }
-  
-  // Add common alternative locations
-  paths.push("/root/.config/opencode/opencode.jsonc");
   
   return paths;
 }
@@ -330,13 +347,26 @@ function normalizeRecentModels(state: OpenCodeModelState): FavoriteModel[] {
 }
 
 function getOpenCodeModelStatePath(): string {
+  const homeDir = process.env.HOME || process.env.USERPROFILE || "";
+
+  if (process.platform === "win32") {
+    const appData = process.env.APPDATA;
+    const localAppData = process.env.LOCALAPPDATA;
+
+    // Check multiple possible locations in priority order
+    if (appData) return path.join(appData, "opencode", "model.json");
+    if (localAppData) return path.join(localAppData, "opencode", "opencode", "model.json");
+    if (localAppData) return path.join(localAppData, "opencode", "model.json");
+    if (homeDir) return path.join(homeDir, ".opencode", "model.json");
+    if (homeDir) return path.join(homeDir, ".local", "state", "opencode", "model.json");
+  }
+
   const xdgStateHome = process.env.XDG_STATE_HOME;
 
   if (xdgStateHome && xdgStateHome.trim().length > 0) {
     return path.join(xdgStateHome, "opencode", "model.json");
   }
 
-  const homeDir = process.env.HOME || process.env.USERPROFILE || "";
   return path.join(homeDir, ".local", "state", "opencode", "model.json");
 }
 
