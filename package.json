@@ -1,6 +1,6 @@
 {
   "name": "zardbot-telegram",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "ZardBot Telegram Bot - A Telegram client for OpenCode with TTS and STT support.",
   "type": "module",
   "main": "./dist/index.js",
