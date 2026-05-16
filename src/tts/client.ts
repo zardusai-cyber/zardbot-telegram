@@ -120,8 +120,8 @@ export async function synthesizeSpeech(text: string, voice?: string): Promise<Tt
     speed: config.tts.speed || 1.0,
   };
 
-  logger.debug(
-    `[TTS] Sending speech synthesis request: url=${url}, voice=${selectedVoice}, text=${text.length} chars`,
+  logger.info(
+    `[TTS] Synthesizing speech: voice=${selectedVoice}, text=${text.length} chars`,
   );
 
   const controller = new AbortController();
@@ -146,7 +146,7 @@ export async function synthesizeSpeech(text: string, voice?: string): Promise<Tt
     const arrayBuffer = await response.arrayBuffer();
     const audioBuffer = Buffer.from(arrayBuffer);
 
-    logger.debug(`[TTS] Synthesized audio: ${audioBuffer.length} bytes, type=${contentType}`);
+    logger.info(`[TTS] Synthesized audio: ${audioBuffer.length} bytes, type=${contentType}`);
 
     return { audio: audioBuffer, contentType };
   } catch (err) {

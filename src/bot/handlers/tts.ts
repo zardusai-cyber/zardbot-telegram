@@ -45,7 +45,7 @@ export async function sendTtsVoiceMessage(
     return false;
   }
 
-  logger.debug(`[TTS] Synthesizing speech for ${truncatedText.length} chars with voice ${voice}`);
+  logger.info(`[TTS] Synthesizing speech: ${truncatedText.length} chars, voice=${voice}`);
 
   try {
     const result = await synthesizeSpeech(truncatedText, voice);
@@ -55,7 +55,7 @@ export async function sendTtsVoiceMessage(
       disable_notification: true,
     });
 
-    logger.debug(`[TTS] Voice message sent: ${result.audio.length} bytes`);
+    logger.info(`[TTS] Voice message sent: ${result.audio.length} bytes`);
     return true;
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);

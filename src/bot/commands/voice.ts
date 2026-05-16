@@ -143,12 +143,13 @@ export async function handleVoiceCallback(ctx: Context): Promise<boolean> {
     if (callbackData.action === "select" && callbackData.voice) {
       setCurrentTtsVoice(callbackData.voice);
       setTtsEnabled(true);
+      await ctx.answerCallbackQuery({ text: t("tts.voice_changed", { voice: callbackData.voice }) });
       const msg = ctx.callbackQuery?.message;
       if (msg && "message_id" in msg) {
         await ctx.api.editMessageText(
           ctx.chat!.id,
           msg.message_id,
-          t("tts.voice_changed", { voice: callbackData.voice }),
+          t("tts.menu_current", { voice: callbackData.voice }),
           { reply_markup: undefined },
         );
       }
