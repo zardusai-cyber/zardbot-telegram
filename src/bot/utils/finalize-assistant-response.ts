@@ -94,16 +94,22 @@ export async function finalizeAssistantResponse({
     try {
       // Clean text for TTS (remove code blocks, markdown, etc.)
       const cleanedText = cleanTextForTts(messageText);
+      logger.info(`[FinalizeResponse] TTS check: raw=${messageText.length} chars, cleaned=${cleanedText.length} chars`);
       
       if (cleanedText.length > 0) {
         // Send TTS in background - don't block the response
+        logger.info("[FinalizeResponse] Sending TTS in background...");
         sendTtsVoiceMessage(api, chatId, cleanedText).catch((err) => {
           logger.warn("[FinalizeResponse] TTS failed:", err);
         });
+      } else {
+        logger.info("[FinalizeResponse] TTS skipped: cleaned text is empty after stripping code/markdown");
       }
     } catch (err) {
       logger.warn("[FinalizeResponse] TTS error:", err);
     }
+  } else {
+    logger.debug(`[FinalizeResponse] TTS not attempted: enableTts=${enableTts}, hasApi=${!!api}, hasChatId=${!!chatId}`);
   }
 
   return false;

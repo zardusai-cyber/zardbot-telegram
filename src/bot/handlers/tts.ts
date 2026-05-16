@@ -24,11 +24,13 @@ export async function sendTtsVoiceMessage(
 ): Promise<boolean> {
   // Check if TTS is enabled at all
   if (!isTtsEnabled()) {
+    logger.info("[TTS] Skipped: TTS is not enabled");
     return false;
   }
 
   // Check if TTS is configured
   if (!isTtsConfigured()) {
+    logger.info("[TTS] Skipped: TTS API URL not configured");
     return false;
   }
 
